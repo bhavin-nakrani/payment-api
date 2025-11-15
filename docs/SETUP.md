@@ -1,14 +1,5 @@
 # Setup Guide - Payment API
 
-Complete setup guide with all commands, steps, and environment settings.
-
-## Prerequisites
-
-- **Docker Desktop** (recommended) or Docker Engine + Docker Compose
-- **Git** (optional, for version control)
-- **Windows**: PowerShell 5.1+ or Windows Terminal
-- **Linux/Mac**: Bash shell
-
 ## Quick Setup
 
 ### 1. Clone Repository (if needed)
@@ -500,22 +491,6 @@ DATABASE_URL=<production-database-url>
 REDIS_URL=<production-redis-url>
 JWT_PASSPHRASE=<strong-production-passphrase>
 ```
-
-### Security Checklist
-
-- [ ] Change `APP_SECRET` to strong random value
-- [ ] Set strong `JWT_PASSPHRASE`
-- [ ] Use production database with strong credentials
-- [ ] Enable HTTPS/SSL certificates
-- [ ] Set up firewall rules
-- [ ] Configure rate limiting
-- [ ] Set up monitoring and alerts
-- [ ] Enable Redis persistence (AOF/RDB)
-- [ ] Set up database backups
-- [ ] Use environment variables (don't commit `.env`)
-- [ ] Review and adjust cache TTL values
-- [ ] Set up process manager (Supervisor) for workers
-- [ ] Configure load balancer for horizontal scaling
 
 ### Performance Optimization
 

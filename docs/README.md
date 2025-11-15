@@ -125,7 +125,7 @@ curl http://localhost:7000/health
 
 **Access the API**: http://localhost:7000
 
-For detailed setup instructions, see **[Setup Guide](./docs/SETUP.md)**.
+For detailed setup instructions, see **[Setup Guide](./SETUP.md)**.
 
 ## 📡 API Endpoints
 
@@ -151,7 +151,6 @@ For detailed setup instructions, see **[Setup Guide](./docs/SETUP.md)**.
 - `GET /health/live` - Liveness probe
 - `GET /health/ready` - Readiness probe
 
-For complete API documentation with examples, see **[API Examples](./docs/API_EXAMPLES.md)**.
 
 ## 🧪 Testing
 
@@ -285,9 +284,9 @@ docker-compose restart
 
 | Document | Description |
 |----------|-------------|
-| **[SETUP.md](./docs/SETUP.md)** | Complete setup guide with all commands and configuration |
-| **[API_EXAMPLES.md](./docs/API_EXAMPLES.md)** | API usage examples with request/response samples |
-| **[postman_collection.json](./postman_collection.json)** | Postman collection for API testing |
+| **[SETUP.md](./SETUP.md)** | Complete setup guide with all commands and configuration |
+| **[API_EXAMPLES.md](./API_EXAMPLES.md)** | API usage examples with request/response samples |
+| **[postman_collection.json](../postman_collection.json)** | Postman collection for API testing |
 
 ## 🔧 Configuration
 
