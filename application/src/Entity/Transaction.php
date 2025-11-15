@@ -30,8 +30,8 @@ class Transaction
     public const TYPE_WITHDRAWAL = 'withdrawal';
 
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
-    private Uuid $id;
+    #[ORM\Column(type: 'string', length: 36, unique: true)]
+    private string $id;
 
     #[ORM\Column(length: 50, unique: true)]
     private string $referenceNumber;
@@ -76,7 +76,7 @@ class Transaction
 
     public function __construct()
     {
-        $this->id = Uuid::v4();
+        $this->id = Uuid::v4()->toRfc4122();
     }
 
     #[ORM\PrePersist]
@@ -101,7 +101,7 @@ class Transaction
         return sprintf('TXN%s%s', date('YmdHis'), substr(uniqid(), -6));
     }
 
-    public function getId(): Uuid
+    public function getId(): string
     {
         return $this->id;
     }

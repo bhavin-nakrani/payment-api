@@ -19,8 +19,8 @@ use Symfony\Component\Uid\Uuid;
 class Account
 {
     #[ORM\Id]
-    #[ORM\Column(type: 'uuid', unique: true)]
-    private Uuid $id;
+    #[ORM\Column(type: 'string', length: 36, unique: true)]
+    private string $id;
 
     #[ORM\Column(length: 20, unique: true)]
     private string $accountNumber;
@@ -59,7 +59,7 @@ class Account
 
     public function __construct()
     {
-        $this->id = Uuid::v4();
+        $this->id = Uuid::v4()->toRfc4122();
         $this->outgoingTransactions = new ArrayCollection();
         $this->incomingTransactions = new ArrayCollection();
     }
@@ -86,7 +86,7 @@ class Account
         return sprintf('%020d', random_int(10000000000000000000, 99999999999999999999));
     }
 
-    public function getId(): Uuid
+    public function getId(): string
     {
         return $this->id;
     }

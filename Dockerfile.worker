@@ -19,6 +19,10 @@ RUN docker-php-ext-install pcntl
 RUN pecl install apcu && pecl clear-cache
 RUN docker-php-ext-enable apcu
 
+# Install phpredis extension for Redis transport
+RUN pecl install redis && pecl clear-cache
+RUN docker-php-ext-enable redis
+
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copy PHP configuration
