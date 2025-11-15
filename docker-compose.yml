@@ -1,0 +1,49 @@
+#version: '3'
+services:
+  php-application:
+    container_name: php-application
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - PHP_EXTENSION_XDEBUG=1
+      - A_D_R=/var/www/html/public
+      - APP_ENV=dev
+      - APP_DEBUG=1
+    volumes:
+      - ./application:/var/www/html
+      - ./vhost.conf:/etc/apache2/sites-available/000-default.conf
+      - ./php.ini:/usr/local/etc/php/php.ini
+    # set working directory to the project root inside the container
+    working_dir: /var/www/html
+    ports:
+      - "7000:80"
+    networks:
+      - dev-network
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./application:/var/lib/redis
+    networks:
+      - dev-network
+  messenger-worker:
+    container_name: messenger-worker
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    volumes:
+      - ./application:/var/www/html
+    working_dir: /var/www/html
+    command: php bin/console messenger:consume async -vv
+    depends_on:
+      - redis
+      - php-application
+    networks:
+      - dev-network
+    restart: unless-stopped
+networks:
+  dev-network:
+    driver: bridge

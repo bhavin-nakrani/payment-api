@@ -1,0 +1,31 @@
+FROM php:8.2.28-cli
+
+# setup time zone
+ENV TZ=Europe/London
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt-get --allow-releaseinfo-change update
+
+RUN apt-get install -y curl
+RUN apt-get install -y git libzip-dev unzip libpq-dev apt-utils && docker-php-ext-install zip pdo pdo_mysql bcmath
+
+# Install opcache
+RUN docker-php-ext-install opcache
+
+# Required for messenger worker
+RUN docker-php-ext-install pcntl
+
+# Install APCu for caching
+RUN pecl install apcu && pecl clear-cache
+RUN docker-php-ext-enable apcu
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copy PHP configuration
+COPY ./php.ini /usr/local/etc/php/php.ini
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Keep container running and ready for messenger commands
+CMD ["tail", "-f", "/dev/null"]
