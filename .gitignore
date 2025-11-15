@@ -1,0 +1,54 @@
+###> symfony/framework-bundle ###
+application/.env
+application/.env.local
+application/.env.local.php
+application/.env.*.local
+application/config/secrets/prod/prod.decrypt.private.php
+application/public/bundles/
+application/var/
+application/vendor/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+application/.phpunit.cache
+application/.phpunit.result.cache
+application/phpunit.xml
+###< phpunit/phpunit ###
+
+###> symfony/phpunit-bridge ###
+application/.phpunit
+application/.phpunit.result.cache
+application/phpunit.xml
+###< symfony/phpunit-bridge ###
+
+###> lexik/jwt-authentication-bundle ###
+application/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+application/var/log/*
+
+# Composer
+application/composer.lock
+
+# Node modules (if any)
+node_modules/
+
+# Docker volumes
+.docker/
+
+# Backup files
+*.bak
+*.backup

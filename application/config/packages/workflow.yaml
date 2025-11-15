@@ -1,0 +1,35 @@
+framework:
+    workflows:
+        fund_transfer:
+            type: 'state_machine'
+            audit_trail:
+                enabled: true
+            marking_store:
+                type: 'method'
+                property: 'status'
+            supports:
+                - App\Entity\Transaction
+            initial_marking: pending
+            places:
+                - pending
+                - processing
+                - completed
+                - failed
+                - reversed
+            transitions:
+                process:
+                    from: pending
+                    to: processing
+                complete:
+                    from: processing
+                    to: completed
+                fail:
+                    from: [pending, processing]
+                    to: failed
+                reverse:
+                    from: completed
+                    to: reversed
+                retry:
+                    from: failed
+                    to: pending
+
