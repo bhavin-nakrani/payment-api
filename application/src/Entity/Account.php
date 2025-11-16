@@ -83,7 +83,14 @@ class Account
 
     private function generateAccountNumber(): string
     {
-        return sprintf('%020d', random_int(10000000000000000000, 99999999999999999999));
+        // Generate a 20-digit numeric account number as a string.
+        // Avoid using extremely large integers with random_int which can overflow.
+        $account = (string) random_int(1, 9); // first digit must not be zero
+        for ($i = 0; $i < 19; $i++) {
+            $account .= (string) random_int(0, 9);
+        }
+
+        return $account;
     }
 
     public function getId(): string
