@@ -33,9 +33,14 @@ RUN docker-php-ext-enable apcu
 RUN pecl install redis && pecl clear-cache
 RUN docker-php-ext-enable redis
 
+# Install Xdebug for code coverage
+RUN pecl install xdebug && pecl clear-cache
+RUN docker-php-ext-enable xdebug
+
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY ./php.ini /usr/local/etc/php/php.ini
 COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

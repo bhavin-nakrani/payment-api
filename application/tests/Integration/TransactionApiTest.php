@@ -152,7 +152,7 @@ class TransactionApiTest extends WebTestCase
         
         $this->assertArrayHasKey('transaction', $data);
         $this->assertEquals($transaction->getReferenceNumber(), $data['transaction']['referenceNumber']);
-        $this->assertEquals('100.00', $data['transaction']['amount']);
+        $this->assertEquals('100.0000', $data['transaction']['amount']);
     }
 
     public function testListAccountTransactions(): void

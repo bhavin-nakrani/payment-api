@@ -13,6 +13,7 @@ application/vendor/
 application/.phpunit.cache
 application/.phpunit.result.cache
 application/phpunit.xml
+application/public/coverage
 ###< phpunit/phpunit ###
 
 ###> symfony/phpunit-bridge ###

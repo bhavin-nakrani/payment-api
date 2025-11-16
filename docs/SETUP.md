@@ -399,9 +399,23 @@ docker exec -it php-application vendor/bin/phpunit tests/Integration
 # Run specific test file
 docker exec -it php-application vendor/bin/phpunit tests/Service/FundTransferServiceTest.php
 
-# Run with coverage (requires xdebug)
+# Run with code coverage (HTML report)
 docker exec -it php-application vendor/bin/phpunit --coverage-html coverage
+
+# Run with code coverage (text output)
+docker exec -it php-application vendor/bin/phpunit --coverage-text
+
+# Run with code coverage (Clover XML for CI)
+docker exec -it php-application vendor/bin/phpunit --coverage-clover coverage.xml
+
+# View coverage report (after generating HTML coverage)
+# symlink coverage to public directory
+docker exec -it php-application ln -s /var/www/html/coverage /var/www/html/public/coverage
+
+# Open application/coverage/index.html in your browser
 ```
+
+**Note**: Code coverage reports are generated in `application/coverage/` directory.
 
 ## Troubleshooting
 

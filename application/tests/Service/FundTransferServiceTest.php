@@ -15,8 +15,10 @@ use App\Service\FundTransferService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 class FundTransferServiceTest extends TestCase
@@ -68,7 +70,11 @@ class FundTransferServiceTest extends TestCase
         $this->entityManager
             ->expects($this->once())
             ->method('persist')
-            ->with($this->isInstanceOf(Transaction::class));
+            ->with($this->isInstanceOf(Transaction::class))
+            ->willReturnCallback(function(Transaction $transaction) {
+                // Manually trigger PrePersist lifecycle callback
+                $transaction->onPrePersist();
+            });
 
         $this->entityManager
             ->expects($this->once())
@@ -81,7 +87,10 @@ class FundTransferServiceTest extends TestCase
         $this->messageBus
             ->expects($this->once())
             ->method('dispatch')
-            ->with($this->isInstanceOf(ProcessTransactionMessage::class));
+            ->with($this->isInstanceOf(ProcessTransactionMessage::class))
+            ->willReturnCallback(function($message) {
+                return new Envelope($message);
+            });
 
         $transaction = $this->service->initiate(
             '12345678901234567890',
@@ -153,6 +162,8 @@ class FundTransferServiceTest extends TestCase
         $destinationAccount = $this->createAccount('09876543210987654321', '500.00');
         
         $transaction = new Transaction();
+        // Manually call lifecycle callback to generate reference number
+        $transaction->onPrePersist();
         $transaction->setSourceAccount($sourceAccount);
         $transaction->setDestinationAccount($destinationAccount);
         $transaction->setAmount('100.00');
@@ -165,18 +176,33 @@ class FundTransferServiceTest extends TestCase
             ->with($transaction, 'process')
             ->willReturn(true);
 
+        $applyCallCount = 0;
         $this->workflow
             ->expects($this->exactly(2))
             ->method('apply')
-            ->withConsecutive(
-                [$transaction, 'process'],
-                [$transaction, 'complete']
-            );
+            ->willReturnCallback(function($trans, $transition) use ($transaction, &$applyCallCount) {
+                $applyCallCount++;
+                if ($applyCallCount === 1) {
+                    $this->assertEquals($transaction, $trans);
+                    $this->assertEquals('process', $transition);
+                    $transaction->setStatus(Transaction::STATUS_PROCESSING);
+                } elseif ($applyCallCount === 2) {
+                    $this->assertEquals($transaction, $trans);
+                    $this->assertEquals('complete', $transition);
+                    $transaction->setStatus(Transaction::STATUS_COMPLETED);
+                }
+                return new Marking([$transition => 1]);
+            });
 
         $this->accountRepository
             ->expects($this->exactly(2))
             ->method('findByIdWithLock')
             ->willReturnOnConsecutiveCalls($sourceAccount, $destinationAccount);
+        
+        $this->entityManager
+            ->expects($this->once())
+            ->method('refresh')
+            ->with($transaction);
 
         $this->entityManager
             ->expects($this->once())
