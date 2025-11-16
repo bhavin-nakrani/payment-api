@@ -167,6 +167,61 @@ docker exec -it php-application php bin/console doctrine:schema:validate
 - `transactions` - Fund transfer records
 - `messenger_messages` - Message queue table
 
+### 6.1. Connect to MySQL with MySQL Workbench
+
+The Docker Compose setup includes a MySQL 8.0 container with persistent data storage.
+
+**MySQL Connection Details:**
+
+| Setting | Value |
+|---------|-------|
+| **Hostname** | `localhost` or `127.0.0.1` |
+| **Port** | `3306` |
+| **Username** | `payment_user` |
+| **Password** | `payment_pass` |
+| **Database** | `payment-api` |
+
+**Alternative Root Access:**
+- **Username:** `root`
+- **Password:** `root123`
+
+**MySQL Workbench Setup Steps:**
+
+1. Open MySQL Workbench
+2. Click the **+** button next to "MySQL Connections"
+3. Fill in connection details:
+   ```
+   Connection Name: Payment API MySQL
+   Hostname: 127.0.0.1
+   Port: 3306
+   Username: payment_user
+   ```
+4. Click **Store in Vault** and enter password: `payment_pass`
+5. Click **Test Connection** to verify
+6. Click **OK** to save
+
+**Command Line Access:**
+
+```bash
+# Connect as payment_user
+docker exec -it mysql mysql -u payment_user -ppayment_pass payment-api
+
+# Connect as root
+docker exec -it mysql mysql -u root -proot123
+```
+
+**Data Persistence:**
+
+Data is stored in a Docker volume named `mysql-data`. Your data will persist even when you:
+- Stop containers: `docker-compose stop`
+- Remove containers: `docker-compose down`
+- Restart your computer
+
+**To completely remove database (including data):**
+```bash
+docker-compose down -v  # The -v flag removes volumes
+```
+
 ### 7. Verify Installation
 
 #### Check Application Health
@@ -226,76 +281,22 @@ curl -X POST http://localhost:7000/api/auth/login \
 # Save the token from the response
 ```
 
-## Docker Configuration
-
-### docker-compose.yml Services
-
-```yaml
-services:
-  php-application:
-    container_name: php-application
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "7000:80"
-    volumes:
-      - ./application:/var/www/html
-    networks:
-      - dev-network
-
-  redis:
-    container_name: redis
-    image: redis:alpine
-    ports:
-      - '6379:6379'
-    networks:
-      - dev-network
-
-  messenger-worker:
-    container_name: messenger-worker
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
-    volumes:
-      - ./application:/var/www/html
-    command: php bin/console messenger:consume async -vv
-    depends_on:
-      - redis
-      - php-application
-    networks:
-      - dev-network
-```
-
 ### Dockerfile (PHP Application)
 
 Key features in our Dockerfile:
 - PHP 8.2.28 with Apache
 - PHP extensions: `pdo_mysql`, `bcmath`, `opcache`, `pcntl`, `redis`, `apcu`
+- MySQL 8 for database interactions
 - Composer for dependency management
 - Node.js and Yarn for asset management
 
 ## Database Configuration
 
-### MySQL Setup (Local Installation)
-
-If using MySQL on your local machine:
-
-```bash
-# Create database
-mysql -u root -p
-CREATE DATABASE payment_api CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'admin'@'%' IDENTIFIED BY 'admin@123';
-GRANT ALL PRIVILEGES ON payment_api.* TO 'admin'@'%';
-FLUSH PRIVILEGES;
-EXIT;
-```
-
 ### Connection from Docker to Host MySQL
 
 Update `application/.env`:
 ```env
-DATABASE_URL="mysql://admin:admin@123@host.docker.internal:3306/payment-api?serverVersion=8.0&charset=utf8mb4"
+DATABASE_URL="mysql://payment_user:payment_pass@mysql:3306/payment-api?serverVersion=8.0&charset=utf8mb4"
 ```
 
 ## Common Commands

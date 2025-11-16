@@ -23,7 +23,7 @@ class TransactionWorkflowEnteredListener
         $transaction = $event->getSubject();
         
         $this->logger->info('Transaction workflow state entered', [
-            'transaction_id' => $transaction->getId()->toRfc4122(),
+            'transaction_id' => $transaction->getId(),
             'reference' => $transaction->getReferenceNumber(),
             'state' => $event->getMarking()->getPlaces(),
             'transition' => $event->getTransition()?->getName(),

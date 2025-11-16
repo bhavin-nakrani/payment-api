@@ -23,7 +23,7 @@ class TransactionWorkflowCompletedListener
         $transaction = $event->getSubject();
         
         $this->logger->info('Transaction workflow transition completed', [
-            'transaction_id' => $transaction->getId()->toRfc4122(),
+            'transaction_id' => $transaction->getId(),
             'reference' => $transaction->getReferenceNumber(),
             'from' => array_keys($event->getMarking()->getPlaces()),
             'transition' => $event->getTransition()->getName(),

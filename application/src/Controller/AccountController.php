@@ -69,8 +69,8 @@ class AccountController extends AbstractController
             $this->entityManager->flush();
 
             $this->logger->info('Account created successfully', [
-                'account_id' => $account->getId()->toRfc4122(),
-                'user_id' => $user->getId()->toRfc4122(),
+                'account_id' => $account->getId(),
+                'user_id' => $user->getId(),
                 'account_number' => $account->getAccountNumber(),
             ]);
 
@@ -80,7 +80,7 @@ class AccountController extends AbstractController
             ], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             $this->logger->error('Account creation failed', [
-                'user_id' => $user->getId()->toRfc4122(),
+                'user_id' => $user->getId(),
                 'error' => $e->getMessage(),
             ]);
 
@@ -97,7 +97,7 @@ class AccountController extends AbstractController
         $user = $this->getUser();
 
         $accounts = $this->cacheService->getUserData(
-            'accounts_' . $user->getId()->toRfc4122(),
+            'accounts_' . $user->getId(),
             fn() => $this->accountRepository->findActiveAccountsByUser($user)
         );
 
@@ -127,7 +127,7 @@ class AccountController extends AbstractController
         }
 
         $accountData = $this->cacheService->getAccountData(
-            $account->getId()->toRfc4122(),
+            $account->getId(),
             fn() => $this->serializeAccount($account)
         );
 
@@ -160,7 +160,7 @@ class AccountController extends AbstractController
     private function serializeAccount(Account $account): array
     {
         return [
-            'id' => $account->getId()->toRfc4122(),
+            'id' => $account->getId(),
             'accountNumber' => $account->getAccountNumber(),
             'accountType' => $account->getAccountType(),
             'balance' => $account->getBalance(),

@@ -80,7 +80,7 @@ class TransactionController extends AbstractController
             return $this->json([
                 'message' => 'Transfer initiated successfully',
                 'transaction' => [
-                    'id' => $transaction->getId()->toRfc4122(),
+                    'id' => $transaction->getId(),
                     'referenceNumber' => $transaction->getReferenceNumber(),
                     'status' => $transaction->getStatus(),
                     'amount' => $transaction->getAmount(),
@@ -99,7 +99,7 @@ class TransactionController extends AbstractController
         } catch (\Exception $e) {
             $this->logger->error('Transfer initiation failed', [
                 'error' => $e->getMessage(),
-                'user_id' => $user->getId()->toRfc4122(),
+                'user_id' => $user->getId(),
             ]);
 
             return $this->json([
@@ -131,7 +131,7 @@ class TransactionController extends AbstractController
 
         return $this->json([
             'transaction' => [
-                'id' => $transaction->getId()->toRfc4122(),
+                'id' => $transaction->getId(),
                 'referenceNumber' => $transaction->getReferenceNumber(),
                 'status' => $transaction->getStatus(),
                 'type' => $transaction->getType(),
@@ -169,7 +169,7 @@ class TransactionController extends AbstractController
 
         return $this->json([
             'transactions' => array_map(fn($transaction) => [
-                'id' => $transaction->getId()->toRfc4122(),
+                'id' => $transaction->getId(),
                 'referenceNumber' => $transaction->getReferenceNumber(),
                 'status' => $transaction->getStatus(),
                 'type' => $transaction->getType(),

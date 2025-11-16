@@ -77,12 +77,12 @@ class FundTransferService
             $this->entityManager->flush();
 
             // Dispatch to message queue for async processing
-            $this->messageBus->dispatch(new ProcessTransactionMessage($transaction->getId()->toRfc4122()));
+            $this->messageBus->dispatch(new ProcessTransactionMessage($transaction->getId()));
 
             $this->entityManager->commit();
 
             $this->logger->info('Fund transfer initiated', [
-                'transaction_id' => $transaction->getId()->toRfc4122(),
+                'transaction_id' => $transaction->getId(),
                 'reference' => $transaction->getReferenceNumber(),
                 'amount' => $amount,
                 'from' => $sourceAccountNumber,
@@ -90,8 +90,8 @@ class FundTransferService
             ]);
 
             // Invalidate cache
-            $this->cacheService->invalidateAccountCache($sourceAccount->getId()->toRfc4122());
-            $this->cacheService->invalidateAccountCache($destinationAccount->getId()->toRfc4122());
+            $this->cacheService->invalidateAccountCache($sourceAccount->getId());
+            $this->cacheService->invalidateAccountCache($destinationAccount->getId());
 
             return $transaction;
         } catch (\Exception $e) {
@@ -152,13 +152,13 @@ class FundTransferService
             $this->entityManager->commit();
 
             $this->logger->info('Fund transfer completed', [
-                'transaction_id' => $transaction->getId()->toRfc4122(),
+                'transaction_id' => $transaction->getId(),
                 'reference' => $transaction->getReferenceNumber(),
             ]);
 
             // Invalidate cache
-            $this->cacheService->invalidateAccountCache($sourceAccount->getId()->toRfc4122());
-            $this->cacheService->invalidateAccountCache($destinationAccount->getId()->toRfc4122());
+            $this->cacheService->invalidateAccountCache($sourceAccount->getId());
+            $this->cacheService->invalidateAccountCache($destinationAccount->getId());
 
         } catch (\Exception $e) {
             $this->entityManager->rollback();
@@ -176,13 +176,13 @@ class FundTransferService
                 $this->entityManager->rollback();
                 $this->logger->error('Failed to mark transaction as failed', [
                     'error' => $innerException->getMessage(),
-                    'transaction_id' => $transaction->getId()->toRfc4122(),
+                    'transaction_id' => $transaction->getId(),
                 ]);
             }
 
             $this->logger->error('Fund transfer processing failed', [
                 'error' => $e->getMessage(),
-                'transaction_id' => $transaction->getId()->toRfc4122(),
+                'transaction_id' => $transaction->getId(),
             ]);
             
             throw $e;
@@ -216,7 +216,7 @@ class FundTransferService
             $this->entityManager->commit();
 
             $this->logger->info('Fund transfer reversed', [
-                'transaction_id' => $transaction->getId()->toRfc4122(),
+                'transaction_id' => $transaction->getId(),
                 'reason' => $reason,
             ]);
 
@@ -226,7 +226,7 @@ class FundTransferService
             
             $this->logger->error('Fund transfer reversal failed', [
                 'error' => $e->getMessage(),
-                'transaction_id' => $transaction->getId()->toRfc4122(),
+                'transaction_id' => $transaction->getId(),
             ]);
             
             throw $e;

@@ -72,14 +72,14 @@ class AuthController extends AbstractController
             $this->entityManager->flush();
 
             $this->logger->info('User registered successfully', [
-                'user_id' => $user->getId()->toRfc4122(),
+                'user_id' => $user->getId(),
                 'email' => $user->getEmail(),
             ]);
 
             return $this->json([
                 'message' => 'User registered successfully',
                 'user' => [
-                    'id' => $user->getId()->toRfc4122(),
+                    'id' => $user->getId(),
                     'email' => $user->getEmail(),
                     'firstName' => $user->getFirstName(),
                     'lastName' => $user->getLastName(),
@@ -106,7 +106,7 @@ class AuthController extends AbstractController
 
         return $this->json([
             'user' => [
-                'id' => $user->getId()->toRfc4122(),
+                'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),

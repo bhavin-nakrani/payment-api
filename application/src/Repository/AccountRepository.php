@@ -31,7 +31,7 @@ class AccountRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    public function findByIdWithLock(Uuid $id): ?Account
+    public function findByIdWithLock(string $id): ?Account
     {
         return $this->createQueryBuilder('a')
             ->where('a.id = :id')

@@ -26,7 +26,7 @@ class TransactionWorkflowGuardListener
         // For example, you might want to prevent processing if accounts are frozen
         
         $this->logger->debug('Transaction workflow guard check', [
-            'transaction_id' => $transaction->getId()->toRfc4122(),
+            'transaction_id' => $transaction->getId(),
             'transition' => $event->getTransition()->getName(),
         ]);
     }

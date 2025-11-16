@@ -32,7 +32,7 @@ class ProcessTransactionMessageHandler
         $transactionId = Uuid::fromString($message->getTransactionId());
         
         $this->logger->info('Processing transaction message', [
-            'transaction_id' => $transactionId->toRfc4122(),
+            'transaction_id' => $transactionId,
         ]);
 
         // Clear entity manager to avoid stale data
@@ -42,7 +42,7 @@ class ProcessTransactionMessageHandler
         
         if (!$transaction) {
             $this->logger->error('Transaction not found for processing', [
-                'transaction_id' => $transactionId->toRfc4122(),
+                'transaction_id' => $transactionId,
             ]);
             return;
         }
@@ -52,7 +52,7 @@ class ProcessTransactionMessageHandler
             
             // Dispatch completion event
             $this->messageBus->dispatch(new TransactionCompletedEvent(
-                $transaction->getId()->toRfc4122(),
+                $transaction->getId(),
                 $transaction->getReferenceNumber(),
                 $transaction->getAmount(),
                 $transaction->getSourceAccount()->getAccountNumber(),
@@ -61,14 +61,14 @@ class ProcessTransactionMessageHandler
             
         } catch (\Exception $e) {
             $this->logger->error('Transaction processing failed in handler', [
-                'transaction_id' => $transactionId->toRfc4122(),
+                'transaction_id' => $transactionId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
             
             // Dispatch failure event
             $this->messageBus->dispatch(new TransactionFailedEvent(
-                $transaction->getId()->toRfc4122(),
+                $transaction->getId(),
                 $transaction->getReferenceNumber(),
                 $e->getMessage()
             ));
