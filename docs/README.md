@@ -151,6 +151,7 @@ For detailed setup instructions, see **[Setup Guide](./SETUP.md)**.
 - `GET /health/live` - Liveness probe
 - `GET /health/ready` - Readiness probe
 
+For complete API documentation with examples, see **[docs/API_EXAMPLES.md](docs/API_EXAMPLES.md)**.
 
 ## 🧪 Testing
 
@@ -251,18 +252,12 @@ Logs in `application/var/log/`:
 - Failed transactions with reasons
 - System errors and exceptions
 
-### Metrics to Monitor
-- Transaction processing time
-- Queue depth (`messenger_messages` table)
-- Cache hit/miss ratio
-- Failed transaction rate
-- Account balance changes
-
 ## 🐳 Docker Services
 
 | Service | Container | Port | Purpose |
 |---------|-----------|------|---------|
 | **php-application** | php:8.2-apache | 7000 | API server |
+| **mysql** | mysql:8.0 | 3306 | Database |
 | **redis** | redis:alpine | 6379 | Cache + Queue |
 | **messenger-worker** | php:8.2-cli | - | Background processor |
 
