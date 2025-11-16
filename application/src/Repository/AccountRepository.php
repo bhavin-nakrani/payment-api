@@ -34,8 +34,10 @@ class AccountRepository extends ServiceEntityRepository
     public function findByIdWithLock(string $id): ?Account
     {
         return $this->createQueryBuilder('a')
+            ->leftJoin('a.user', 'u')
+            ->addSelect('u')
             ->where('a.id = :id')
-            ->setParameter('id', $id, 'uuid')
+            ->setParameter('id', $id)
             ->getQuery()
             ->setLockMode(\Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE)
             ->getOneOrNullResult();

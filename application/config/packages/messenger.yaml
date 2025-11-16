@@ -14,10 +14,6 @@ framework:
             
             transaction_processing:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
-                options:
-                    stream: transaction_processing
-                    group: transaction_processors
-                    consumer: processor_1
                 retry_strategy:
                     max_retries: 5
                     delay: 2000

@@ -35,10 +35,8 @@ class ProcessTransactionMessageHandler
             'transaction_id' => $transactionId,
         ]);
 
-        // Clear entity manager to avoid stale data
-        $this->entityManager->clear();
-
-        $transaction = $this->transactionRepository->find($transactionId);
+        // Load transaction with all relationships eagerly
+        $transaction = $this->transactionRepository->findWithRelations($message->getTransactionId());
         
         if (!$transaction) {
             $this->logger->error('Transaction not found for processing', [

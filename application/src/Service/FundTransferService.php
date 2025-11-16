@@ -120,6 +120,9 @@ class FundTransferService
         $this->entityManager->beginTransaction();
         
         try {
+            // Refresh transaction to ensure we have latest state with proper relationships
+            $this->entityManager->refresh($transaction);
+            
             // Lock accounts to prevent concurrent modifications
             $sourceAccount = $this->accountRepository->findByIdWithLock($transaction->getSourceAccount()->getId());
             $destinationAccount = $this->accountRepository->findByIdWithLock($transaction->getDestinationAccount()->getId());

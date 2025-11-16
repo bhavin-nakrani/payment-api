@@ -417,20 +417,326 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/transactions/account/{{accountNumber1}}/statistics?from=2024-01-01&to=2024-12-31",
+              "raw": "{{baseUrl}}/api/transactions/account/{{accountNumber1}}/statistics?from=2025-01-01&to=2025-12-31",
               "host": ["{{baseUrl}}"],
               "path": ["api", "transactions", "account", "{{accountNumber1}}", "statistics"],
               "query": [
                 {
                   "key": "from",
-                  "value": "2024-01-01"
+                  "value": "2025-01-01"
                 },
                 {
                   "key": "to",
-                  "value": "2024-12-31"
+                  "value": "2025-12-31"
                 }
               ]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Workflow Testing",
+      "item": [
+        {
+          "name": "Check Transaction Workflow - Pending",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Transaction has workflow status\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.transaction.status).to.exist;",
+                  "    console.log(\"Current Status: \" + jsonData.transaction.status);",
+                  "});",
+                  "",
+                  "pm.test(\"Transaction details are present\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.transaction.referenceNumber).to.exist;",
+                  "    pm.expect(jsonData.transaction.amount).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/{{transactionReference}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "{{transactionReference}}"]
+            },
+            "description": "Check transaction workflow status. The transaction goes through these states:\n- **pending**: Initial state after creation\n- **processing**: Being processed (transition happens via message queue)\n- **completed**: Successfully completed\n- **failed**: Failed during processing\n- **reversed**: Reversed after completion"
+          }
+        },
+        {
+          "name": "Monitor Workflow - Poll Until Completed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Transaction status check\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var status = jsonData.transaction.status;",
+                  "    ",
+                  "    console.log(\"Current Status: \" + status);",
+                  "    ",
+                  "    // Log workflow state details",
+                  "    if (status === 'pending') {",
+                  "        console.log(\"⏳ Transaction is pending - waiting for processing\");",
+                  "    } else if (status === 'processing') {",
+                  "        console.log(\"⚙️ Transaction is being processed\");",
+                  "    } else if (status === 'completed') {",
+                  "        console.log(\"✅ Transaction completed successfully\");",
+                  "        console.log(\"Completed At: \" + jsonData.transaction.completedAt);",
+                  "    } else if (status === 'failed') {",
+                  "        console.log(\"❌ Transaction failed\");",
+                  "        console.log(\"Failure Reason: \" + jsonData.transaction.failureReason);",
+                  "    } else if (status === 'reversed') {",
+                  "        console.log(\"🔄 Transaction was reversed\");",
+                  "        console.log(\"Reversal Reason: \" + jsonData.transaction.failureReason);",
+                  "    }",
+                  "    ",
+                  "    pm.expect(status).to.be.oneOf(['pending', 'processing', 'completed', 'failed', 'reversed']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/{{transactionReference}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "{{transactionReference}}"]
+            },
+            "description": "Use this request repeatedly to monitor workflow state changes. Run this multiple times to see the transaction progress through states:\n1. pending → processing → completed (success path)\n2. pending/processing → failed (failure path)\n3. completed → reversed (reversal path)"
+          }
+        },
+        {
+          "name": "Test Workflow - Completed State",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Transaction is in completed state\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var status = jsonData.transaction.status;",
+                  "    ",
+                  "    if (status === 'completed') {",
+                  "        console.log(\"✅ Transaction successfully completed\");",
+                  "        console.log(\"Completed At: \" + jsonData.transaction.completedAt);",
+                  "        pm.expect(jsonData.transaction.completedAt).to.exist;",
+                  "    } else {",
+                  "        console.log(\"Current status: \" + status);",
+                  "        console.log(\"Transaction not yet completed. Current state: \" + status);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/{{transactionReference}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "{{transactionReference}}"]
+            },
+            "description": "Verify that the transaction has reached the **completed** state. This happens after:\n1. Transaction created (pending)\n2. Picked up by message queue worker\n3. Transitioned to processing\n4. Funds transferred successfully\n5. Marked as completed with completedAt timestamp"
+          }
+        },
+        {
+          "name": "Test Workflow - Failed State",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Check for failed transaction\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var status = jsonData.transaction.status;",
+                  "    ",
+                  "    if (status === 'failed') {",
+                  "        console.log(\"❌ Transaction failed as expected\");",
+                  "        console.log(\"Failure Reason: \" + jsonData.transaction.failureReason);",
+                  "        pm.expect(jsonData.transaction.failureReason).to.exist;",
+                  "    } else {",
+                  "        console.log(\"Current status: \" + status);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/{{transactionReference}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "{{transactionReference}}"]
+            },
+            "description": "To test the **failed** state, create a transaction that will fail:\n- Transfer more than available balance\n- Transfer from account with insufficient funds\n- System error during processing\n\nThe transaction will transition: pending → processing → failed"
+          }
+        },
+        {
+          "name": "Create Transfer to Test Insufficient Balance (Will Fail)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.transaction && jsonData.transaction.referenceNumber) {",
+                  "    pm.collectionVariables.set(\"transactionReference\", jsonData.transaction.referenceNumber);",
+                  "    console.log(\"Transaction created: \" + jsonData.transaction.referenceNumber);",
+                  "    console.log(\"This transaction will likely fail due to insufficient balance\");",
+                  "} else if (jsonData.error) {",
+                  "    console.log(\"Expected error: \" + jsonData.error);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"sourceAccountNumber\": \"{{accountNumber2}}\",\n    \"destinationAccountNumber\": \"{{accountNumber1}}\",\n    \"amount\": \"99999.00\",\n    \"description\": \"Test transfer - will fail due to insufficient balance\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "transfer"]
+            },
+            "description": "Creates a transfer with an amount larger than the account balance. This will either:\n1. Be rejected immediately (validation error), or\n2. Be created and then fail during processing (workflow: pending → processing → failed)"
+          }
+        },
+        {
+          "name": "List All Transactions by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"List transactions and group by status\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var transactions = jsonData.transactions || [];",
+                  "    ",
+                  "    var statusCounts = {",
+                  "        pending: 0,",
+                  "        processing: 0,",
+                  "        completed: 0,",
+                  "        failed: 0,",
+                  "        reversed: 0",
+                  "    };",
+                  "    ",
+                  "    transactions.forEach(function(tx) {",
+                  "        if (statusCounts.hasOwnProperty(tx.status)) {",
+                  "            statusCounts[tx.status]++;",
+                  "        }",
+                  "    });",
+                  "    ",
+                  "    console.log(\"\\n📊 Transaction Workflow Status Summary:\");",
+                  "    console.log(\"⏳ Pending: \" + statusCounts.pending);",
+                  "    console.log(\"⚙️  Processing: \" + statusCounts.processing);",
+                  "    console.log(\"✅ Completed: \" + statusCounts.completed);",
+                  "    console.log(\"❌ Failed: \" + statusCounts.failed);",
+                  "    console.log(\"🔄 Reversed: \" + statusCounts.reversed);",
+                  "    console.log(\"\\nTotal transactions: \" + transactions.length);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/account/{{accountNumber1}}?limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "account", "{{accountNumber1}}"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            },
+            "description": "Lists all transactions for an account and displays a summary of workflow states in the test results console."
           }
         }
       ]

@@ -22,8 +22,27 @@ class TransactionRepository extends ServiceEntityRepository
     public function findByReferenceNumber(string $referenceNumber): ?Transaction
     {
         return $this->createQueryBuilder('t')
+            ->leftJoin('t.sourceAccount', 'sa')
+            ->leftJoin('t.destinationAccount', 'da')
+            ->leftJoin('sa.user', 'su')
+            ->leftJoin('da.user', 'du')
+            ->addSelect('sa', 'da', 'su', 'du')
             ->where('t.referenceNumber = :referenceNumber')
             ->setParameter('referenceNumber', $referenceNumber)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findWithRelations(string $id): ?Transaction
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.sourceAccount', 'sa')
+            ->leftJoin('t.destinationAccount', 'da')
+            ->leftJoin('sa.user', 'su')
+            ->leftJoin('da.user', 'du')
+            ->addSelect('sa', 'da', 'su', 'du')
+            ->where('t.id = :id')
+            ->setParameter('id', $id)
             ->getQuery()
             ->getOneOrNullResult();
     }
