@@ -13,6 +13,10 @@ A production-ready payment API that demonstrates modern PHP development practice
 - **Comprehensive Testing** (unit + integration tests)
 - **Event-Driven Architecture** with message handlers and workflow listeners
 
+Approximate time spent: 10 hours
+
+AI tools and prompts used: Github Copilot for documentation, test cases and code review assistance.
+
 ## 📚 Documentation
 
 - **[docs/SETUP.md](docs/SETUP.md)** - Detailed setup instructions and configuration
