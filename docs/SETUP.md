@@ -200,16 +200,6 @@ The Docker Compose setup includes a MySQL 8.0 container with persistent data sto
 5. Click **Test Connection** to verify
 6. Click **OK** to save
 
-**Command Line Access:**
-
-```bash
-# Connect as payment_user
-docker exec -it mysql mysql -u payment_user -ppayment_pass payment-api
-
-# Connect as root
-docker exec -it mysql mysql -u root -proot123
-```
-
 **Data Persistence:**
 
 Data is stored in a Docker volume named `mysql-data`. Your data will persist even when you:
@@ -232,14 +222,6 @@ curl http://localhost:7000/health
 
 # Expected response:
 # {"status":"healthy","timestamp":"2025-11-15T...","checks":{"database":"ok","redis":"ok"}}
-```
-
-#### Check PHP Version
-
-```bash
-docker exec -it php-application php --version
-
-# Should show: PHP 8.2.x
 ```
 
 #### Check Redis Connection
@@ -361,29 +343,6 @@ docker exec -it php-application php bin/console messenger:stats
 docker exec -it php-application php bin/console messenger:consume transaction_processing -vv
 ```
 
-### Redis Commands
-
-```bash
-# Access Redis CLI
-docker exec -it redis redis-cli
-
-# Inside Redis CLI:
-# Check connection
-PING
-
-# List all keys
-KEYS *
-
-# Get queue length
-XLEN transaction_processing
-
-# Monitor commands
-MONITOR
-
-# Flush all data (⚠️ deletes everything)
-FLUSHALL
-```
-
 ### Testing Commands
 
 ```bash
@@ -401,12 +360,6 @@ docker exec -it php-application vendor/bin/phpunit tests/Service/FundTransferSer
 
 # Run with code coverage (HTML report)
 docker exec -it php-application vendor/bin/phpunit --coverage-html coverage
-
-# Run with code coverage (text output)
-docker exec -it php-application vendor/bin/phpunit --coverage-text
-
-# Run with code coverage (Clover XML for CI)
-docker exec -it php-application vendor/bin/phpunit --coverage-clover coverage.xml
 
 # View coverage report (after generating HTML coverage)
 # symlink coverage to public directory
@@ -428,44 +381,6 @@ docker exec -it php-application ln -s /var/www/html/coverage /var/www/html/publi
 php-application:
   ports:
     - "8000:80"  # Changed from 7000
-```
-
-### JWT Keys Not Found
-
-**Error**: `Unable to load key from "config/jwt/private.pem"`
-
-**Solution**:
-```bash
-cd application
-ls -la config/jwt/
-
-# If files don't exist, regenerate keys
-.\generate-jwt-keys.ps1  # Windows
-# OR
-openssl genpkey -algorithm RSA -out config/jwt/private.pem -pkeyopt rsa_keygen_bits:4096
-openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
-```
-
-### Database Connection Refused
-
-**Error**: `SQLSTATE[HY000] [2002] Connection refused`
-
-**Solution**:
-- Check MySQL is running: `mysql -u root -p`
-- Verify `host.docker.internal` in DATABASE_URL
-- For Docker MySQL, use service name: `mysql://admin:admin@123@db:3306/payment_api`
-
-### Redis Transport Error
-
-**Error**: `The redis transport requires php-redis 4.3.0 or higher`
-
-**Solution**: Always run commands inside Docker container:
-```bash
-# ✅ Correct
-docker exec -it php-application php bin/console <command>
-
-# ❌ Wrong (on Windows host)
-php bin/console <command>
 ```
 
 ### Cache Corruption
