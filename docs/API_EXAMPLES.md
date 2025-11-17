@@ -12,7 +12,6 @@ Complete API reference with request/response examples for the Payment API.
 - [Health & Monitoring](#health--monitoring)
 - [Error Handling](#error-handling)
 - [Postman Collection](#postman-collection)
-- [Code Examples](#code-examples)
 
 ---
 
